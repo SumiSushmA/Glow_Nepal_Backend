@@ -78,7 +78,8 @@ GlowNepal for the web provides a robust, responsive, and user-friendly platform 
 This is Backend for GlowNepal. Below is the Link for Frontend:
 
 **Frontend:**
-For Web: https://github.com/SumiSushmA/GlowNepal_Web.git
-For Mobile: https://github.com/SumiSushmA/GlowNepal-Mobile-App-5th-Sem.git
+1. For Web: https://github.com/SumiSushmA/GlowNepal_Web.git
+2. For Mobile: https://github.com/SumiSushmA/GlowNepal-Mobile-App-5th-Sem.git
+
 
 
