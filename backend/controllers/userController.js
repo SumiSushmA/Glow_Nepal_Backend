@@ -26,7 +26,7 @@ const verifyToken = (req, res, next) => {
 const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
-       
+       console.log(req.body);
 
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, message: "Missing Details" });
@@ -208,8 +208,23 @@ const cancelAppointment = async (req, res) => {
     }
 };
 
-// ✅ Exporting Functions
-export {
-    bookAppointment, cancelAppointment, getProfile, listAppointment, loginUser, registerUser, updateProfile, verifyToken
+// ✅ API to Upload Image
+const uploadImage = async (req, res) => {
+    try {
+        console.log(req.file);
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "Please upload a file" });
+        }
+        res.status(200).json({ success: true, data: req.file.filename });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 };
+
+// ✅ Exporting Functions
+export { bookAppointment, cancelAppointment, getProfile, listAppointment, loginUser, registerUser, updateProfile, uploadImage, verifyToken };
+
+
+
+
 
