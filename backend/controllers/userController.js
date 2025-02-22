@@ -5,6 +5,11 @@ import validator from "validator";
 import appointmentModel from "../models/appointmentModel.js";
 import stylistModel from "../models/stylistModel.js";
 import userModel from "../models/userModel.js";
+import nodemailer from "nodemailer";
+import randomString from "randomstring";
+
+// forget password
+
 
 // ✅ Middleware to Verify JWT Token
 const verifyToken = (req, res, next) => {
@@ -25,6 +30,7 @@ const verifyToken = (req, res, next) => {
 // ✅ API to Register User
 const registerUser = async (req, res) => {
     try {
+        console.log("hefhje", req.body)
         const { name, email, password } = req.body;
        console.log(req.body);
 
@@ -65,12 +71,12 @@ const registerUser = async (req, res) => {
 // ✅ API to Login User
 const loginUser = async (req, res) => {
     try {
+        // console.log(req.body);
         const { email, password } = req.body;
         const user = await userModel.findOne({ email });
-
+        console.log(req.body);
    
         if (!user) {
-       
             return res.status(400).json({ success: false, message: "User does not exist" });
         }
 
@@ -220,9 +226,103 @@ const uploadImage = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+const sendResetPasswordMail = async (firstName, email, token) => {
+    try {
+      
+      const transporter = nodemailer.createTransport({
+        // Configure SMTP settings
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_MAIL,
+          pass: process.env.SMTP_Password,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+  
+      const mailOptions = {
+        from: process.env.SMTP_MAIL,
+        to: email, // User's email
+        subject: "Reset the Password",
+        html:
+          "Hi " +
+          firstName +
+          ', Please copy the link and <a href="http://localhost:3000/reset_password/' +
+          token +
+          '">click here</a> to reset your password',
+      };
+  
+      transporter.sendMail(mailOptions, async (error, info) => {
+        if (error) {
+          console.log(error); // Log the specific error
+        } else {
+          console.log("Mail has been sent :- ", info.response);
+        }
+      });
+    } catch (error) {
+      res.status(400).send({ success: false, msg: error.message });
+    }
+  };
+
+  const forgetPassword = async (req, res) => {
+    try {
+        const userData = await Users.findOne({ email: req.body.email });
+        if (userData) {
+            const randomString = randomstring.generate();
+            // Logging to check token creation
+            console.log("Generated Token:", randomString);
+            
+            const data = await Users.updateOne(
+                { email: req.body.email },
+                { $set: { token: randomString } }
+            );
+            sendResetPasswordMail(userData.firstName, userData.email, randomString);
+            res.status(200).send({ success: true, message: "Please check your inbox." });
+        } else {
+            res.status(200).send({ success: false, message: "This email does not exist." });
+        }
+    } catch (error) {
+        res.status(400).send({ success: false, message: error.message });
+    }
+  };
+  
+  const resetPassword = async (req, res) => {
+    try {
+        const token = req.params.token;
+        
+        // Logging to verify the token passed
+        console.log("Received Token:", token);
+  
+        const user = await Users.findOne({ token: token });
+        // Check if user exists with the token
+        if (!user) {
+            return res.status(404).send({ success: false, message: "Invalid or expired token." });
+        }
+  
+        const { password } = req.body;
+        if (!password || password.trim() === "") {
+            return res.status(400).send({ success: false, message: "Invalid password." });
+        }
+  
+        const hashedPassword = await bcrypt.hash(password, 10);
+  
+        // Update the user's password and clear the token
+        user.password = hashedPassword;
+        user.token = ""; // Clear the token after reset
+        await user.save();
+  
+        res.status(200).send({ success: true, message: "Password reset successfully." });
+    } catch (error) {
+        console.error("Error in resetPassword:", error);
+        res.status(500).send({ success: false, message: "Server Error", error: error.message });
+    }
+  };
 
 // ✅ Exporting Functions
-export { bookAppointment, cancelAppointment, getProfile, listAppointment, loginUser, registerUser, updateProfile, uploadImage, verifyToken };
+export { bookAppointment, cancelAppointment, forgetPassword, getProfile, listAppointment, loginUser, registerUser, resetPassword, sendResetPasswordMail, updateProfile, uploadImage, verifyToken };
 
 
 
