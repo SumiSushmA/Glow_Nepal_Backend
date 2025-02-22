@@ -1,12 +1,11 @@
 import bcrypt from "bcrypt";
 import { v2 as cloudinary } from "cloudinary";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 import validator from "validator";
 import appointmentModel from "../models/appointmentModel.js";
 import stylistModel from "../models/stylistModel.js";
 import userModel from "../models/userModel.js";
-import nodemailer from "nodemailer";
-import randomString from "randomstring";
 
 // forget password
 
@@ -180,17 +179,21 @@ const bookAppointment = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
-
 // ✅ API to Get User Appointments
 const listAppointment = async (req, res) => {
     try {
         const appointments = await appointmentModel.find({ userId: req.userId });
 
-        res.status(200).json({ success: true, appointments });
+        // Debugging: Log appointments before sending response
+        console.log("Fetched Appointments:", appointments);
+
+        res.status(200).json({ success: true, bookings: appointments });
     } catch (error) {
+        console.error("Error fetching appointments:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 // ✅ API to Cancel Appointment
 const cancelAppointment = async (req, res) => {
