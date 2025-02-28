@@ -28,3 +28,7 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => console.log(`Server started on PORT: ${port}`));
+
+// ✅ Add this line to fix the issue:
+
+export default app; 
